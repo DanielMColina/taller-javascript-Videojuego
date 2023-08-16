@@ -1,1 +1,1 @@
-# taller-javascript-jideojuego
+# taller-javascript-videojuego
