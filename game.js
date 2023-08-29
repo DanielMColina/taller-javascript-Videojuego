@@ -7,6 +7,9 @@ const btnDown = document.querySelector("#down")
 
 let canvasSize;
 let elementsSize;
+let level = 0;
+let lives = 3;
+
 
 
 const playerPosition = {
@@ -46,7 +49,13 @@ function startGame(){
     game.font = elementsSize + 'px Verdana';
     game.textAlign = 'end';
   
-    const map = maps[0];
+    const map = maps[level];
+
+    if(!map){
+        gameWin();
+        return;
+    }
+
     const mapRows = map.trim().split('\n');
     const mapRowCols = mapRows.map(row => row.trim().split(''));
 
@@ -84,8 +93,7 @@ function movePlayer(){
     const goalcollisionY = playerPosition.y.toFixed(1) == goalPosition.y.toFixed(1);
     const goalcollision = goalcollisionX && goalcollisionY
     if(goalcollision){
-        console.log("subiste de nivel",
-            playerPosition,goalPosition) 
+        levelWin(); 
     }
     
     const enemyCollision = enemyPositions.find(enemy =>{
@@ -95,10 +103,27 @@ function movePlayer(){
     })
     
         if(enemyCollision){
-            console.log("chocaste con un bomba")
-            return
+            levelFail();
         }
     game.fillText(emojis["PLAYER"],playerPosition.x,playerPosition.y);
+}
+
+function levelWin(){
+    level++
+    startGame()
+}
+function levelFail(){
+    lives--;
+    if(lives <= 0){
+        level = 0;
+        lives = 3;
+    }
+    playerPosition.x =undefined;
+    playerPosition.y =undefined;
+    startGame()
+}
+function gameWin(){
+    console.log("terminaste el juego")
 }
 
 btnUp.addEventListener("click",moveUp);
