@@ -7,23 +7,27 @@ const btnDown = document.querySelector("#down")
 
 let canvasSize;
 let elementsSize;
-let correccion;
 
 
 const playerPosition = {
     x: undefined,
-    y: undefined
+    y: undefined,
 
 }
+const goalPosition = {
+    x: undefined,
+    y: undefined,
+}
+let enemyPositions = []
 
 window.addEventListener("load",setCanvasSize);
 window.addEventListener("resize", setCanvasSize);
 
 function setCanvasSize(){
     if(window.innerHeight > window.innerWidth){
-        canvasSize = (Math.round((window.innerWidth* 0.8) / 100)) * 100
+        canvasSize = window.innerWidth* 0.8
     }else {
-        canvasSize = (Math.round((window.innerHeight* 0.8) / 100)) * 100
+        canvasSize = window.innerHeight* 0.8
     };
 
 
@@ -35,7 +39,6 @@ function setCanvasSize(){
     // console.log(canvasSize)
     correccion = canvasSize / 50;
     elementsSize = canvasSize / 10 ;
-    console.log(canvasSize, elementsSize)
     startGame();
 }
 
@@ -46,21 +49,29 @@ function startGame(){
     const map = maps[0];
     const mapRows = map.trim().split('\n');
     const mapRowCols = mapRows.map(row => row.trim().split(''));
-    console.log({map, mapRows, mapRowCols});
-    
+
+    enemyPositions = []
     game.clearRect(0,0,canvasSize, canvasSize);
     mapRowCols.forEach((row, rowI) => {
       row.forEach((col, colI) => {
         const emoji = emojis[col];
-        const posX = elementsSize * (colI + 1) +correccion;
-        const posY = elementsSize * (rowI + 1) -correccion;
-  
+        const posX = elementsSize * (colI + 1);
+        const posY = elementsSize * (rowI + 1);
+
+
+        
         if (col == 'O') {
           if (!playerPosition.x && !playerPosition.y) {
             playerPosition.x = posX;
             playerPosition.y = posY;
-          }
         }
+        }else if(col== "I"){
+            goalPosition.x = posX;
+            goalPosition.y = posY;
+        }else if(col== "X"){
+            enemyPositions.push({x: posX,y: posY});   
+        }
+
         game.fillText(emoji, posX, posY);
       });
     });
@@ -68,9 +79,26 @@ function startGame(){
     movePlayer();
 }
 
-
 function movePlayer(){
-    game.fillText(emojis["PLAYER"],playerPosition.x,playerPosition.y)
+    const goalcollisionX = playerPosition.x.toFixed(1) == goalPosition.x.toFixed(1);
+    const goalcollisionY = playerPosition.y.toFixed(1) == goalPosition.y.toFixed(1);
+    const goalcollision = goalcollisionX && goalcollisionY
+    if(goalcollision){
+        console.log("subiste de nivel",
+            playerPosition,goalPosition) 
+    }
+    
+    const enemyCollision = enemyPositions.find(enemy =>{
+        const collisionBombX = enemy.x.toFixed(1) ==  playerPosition.x.toFixed(1);
+        const collisionBombY = enemy.y.toFixed(1) == playerPosition.y.toFixed(1);
+        return collisionBombY && collisionBombX;
+    })
+    
+        if(enemyCollision){
+            console.log("chocaste con un bomba")
+            return
+        }
+    game.fillText(emojis["PLAYER"],playerPosition.x,playerPosition.y);
 }
 
 btnUp.addEventListener("click",moveUp);
@@ -87,7 +115,7 @@ function moveBykeys(event){
 }
 
 function moveUp() {
-    if((playerPosition.y - elementsSize) < elementsSize - correccion ){
+    if((playerPosition.y - elementsSize) < elementsSize){
         console.log("Out");
     }else{
         playerPosition.y -= elementsSize;
@@ -96,7 +124,7 @@ function moveUp() {
   };
   
   function moveLeft() {
-    if((playerPosition.x - elementsSize) < elementsSize - correccion ){
+    if((playerPosition.x - elementsSize) < elementsSize){
         console.log("Out");
     }else{
         playerPosition.x -= elementsSize;
@@ -105,7 +133,7 @@ function moveUp() {
   };
   
 function moveRight() {
-    if((playerPosition.x + elementsSize) > canvasSize + correccion ){
+    if((playerPosition.x + elementsSize) > canvasSize){
         console.log("Out");
     }else{
         playerPosition.x += elementsSize;
@@ -113,10 +141,11 @@ function moveRight() {
     }
 };
 function moveDown() {
-    if((playerPosition.y + elementsSize) > canvasSize + correccion ){
+    if((playerPosition.y + elementsSize) > canvasSize){
         console.log("Out");
     }else{
         playerPosition.y += elementsSize;
         startGame(); 
     }
   };
+
