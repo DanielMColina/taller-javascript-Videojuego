@@ -1,15 +1,24 @@
 const canvas = document.querySelector("#game");
 const game = canvas.getContext("2d");
-const btnUp= document.querySelector("#up")
-const btnLeft = document.querySelector("#left")
-const btnRight = document.querySelector("#right")
-const btnDown = document.querySelector("#down")
+const btnUp= document.querySelector("#up");
+const btnLeft = document.querySelector("#left");
+const btnRight = document.querySelector("#right");
+const btnDown = document.querySelector("#down");
+const spanLives = document.querySelector("#lives");
+const spanTime = document.querySelector("#time");
+const spanRecord = document.querySelector("#record");
+const pResult = document.querySelector("#result");
 
 let canvasSize;
 let elementsSize;
 let level = 0;
 let lives = 3;
 
+
+let timeStart;
+// let timePlayer;
+let timeInterval;
+let record;
 
 
 const playerPosition = {
@@ -55,9 +64,16 @@ function startGame(){
         gameWin();
         return;
     }
+    if(!timeStart){
+        timeStart = Date.now();
+        timeInterval = setInterval(showTime, 1000);
+        showRecord()
+    }
 
     const mapRows = map.trim().split('\n');
     const mapRowCols = mapRows.map(row => row.trim().split(''));
+
+    showLives()
 
     enemyPositions = []
     game.clearRect(0,0,canvasSize, canvasSize);
@@ -114,16 +130,43 @@ function levelWin(){
 }
 function levelFail(){
     lives--;
+
     if(lives <= 0){
         level = 0;
         lives = 3;
+        timeStart= undefined;
     }
     playerPosition.x =undefined;
     playerPosition.y =undefined;
     startGame()
 }
 function gameWin(){
-    console.log("terminaste el juego")
+    console.log("terminaste el juego");
+    clearInterval(timeInterval);
+
+     const playerTime = spanTime.innerHTML = ((Date.now() - timeStart)/ 1000).toFixed(0);
+     const recordTime = localStorage.getItem('record');
+
+    if (recordTime) {
+        if (recordTime >= playerTime) {
+          localStorage.setItem('record', playerTime);
+          pResult.innerHTML = 'SUPERASTE EL RECORD :)';
+        } else {
+          pResult.innerHTML = 'lo siento, no superaste el records :(';
+        }
+      } else {
+        localStorage.setItem('record', playerTime);
+        pResult.innerHTML = 'Primera vez? Muy bien, pero ahora trata de superar tu tiempo :)';
+      }
+}
+function showLives(){
+    spanLives.innerText = emojis["HEART"].repeat(lives);
+}
+function showTime(){
+    spanTime.innerHTML = ((Date.now() - timeStart)/ 1000).toFixed(0);
+}
+function showRecord(){
+    spanRecord.innerHTML = localStorage.getItem('record');
 }
 
 btnUp.addEventListener("click",moveUp);
